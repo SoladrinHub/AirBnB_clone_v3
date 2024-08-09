@@ -1,33 +1,47 @@
+
 #!/usr/bin/python3
 """
-module that runs the Flask app
+app
 """
 
 from flask import Flask, jsonify
-from models import storage
+from flask_cors import CORS
+from os import getenv
+
 from api.v1.views import app_views
-'''from os import getenv
-from flask_cors import CORS'''
+from models import storage
+
 
 app = Flask(__name__)
-'''cors = CORS(app, resources={r"/*": {"origins": "0.0.0.0"}})'''
+
+CORS(app, resources={r"/*": {"origins": "0.0.0.0"}})
+
 app.register_blueprint(app_views)
-
-'''
-@app.errorhandler(404)
-def page_not_found(exceptions):
-    """error handler function"""
-    return jsonify(error="Not found"), 404
-
-'''
 
 
 @app.teardown_appcontext
-def teardown_db(exception):
-    """closes the storage on teardown"""
+def teardown(exception):
+    """
+    teardown function
+    """
     storage.close()
 
 
-if __name__ == '__main__':
-    app.run(host=getenv('HBNB_API_HOST'), port=getenv('HBNB_API_PORT'),
-            threaded=True)
+@app.errorhandler(404)
+def handle_404(exception):
+    """
+    handles 404 error
+    :return: returns 404 json
+    """
+    data = {
+        "error": "Not found"
+    }
+
+    resp = jsonify(data)
+    resp.status_code = 404
+
+    return(resp)
+
+if __name__ == "__main__":
+    app.run(getenv("HBNB_API_HOST"), getenv("HBNB_API_PORT"))
+
